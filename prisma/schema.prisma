@@ -15,7 +15,7 @@ datasource db {
 
 model Whitelisted {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
-  email String @unique
+  email String
 
   @@map("whitelisted")
 }

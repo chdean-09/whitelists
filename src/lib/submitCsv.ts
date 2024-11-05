@@ -2,37 +2,44 @@
 
 import csv from 'csvtojson';
 import prisma from './db';
+import { z } from 'zod';
 
-interface csvType {
-  email: string
-}
+const csvTypeSchema = z.object({
+  email: z
+    .string({
+      required_error: 'Email address is missing',
+    })
+    .email({
+      message: 'Invalid email address',
+    }),
+});
+
+const csvArraySchema = z.array(csvTypeSchema);
 
 export default async function submitCSV(prevState: unknown, formData: FormData): Promise<{
   message: string | null;
   ok: boolean;
 }> {
-  const csvFile = formData.get('csvFile');
+  const csvFile = formData.get('csvFile') as File;
 
-  if (csvFile && csvFile instanceof File) {
-    try {
-      const fileText = await csvFile.text();
+  try {
+    const fileText = await csvFile.text();
 
-      const jsonArray: csvType[] = await csv().fromString(fileText);
-      const some: csvType[] = [
-        { email: '' }, { email: 'sd' }
-      ]
+    const jsonArray = await csv().fromString(fileText);
+    const validation = csvArraySchema.safeParse(jsonArray);
 
-      await prisma.whitelisted.createMany({
-        data: some
-      })
-
-      return { message: 'Whitelisted emails saved successfully', ok: true }
-    } catch (error) {
-      console.error(error);
-      return { message: 'Having trouble saving the whitelisted emails', ok: false }
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0].message;
+      return { message: errorMessage, ok: false };
     }
-  } else {
-    console.error("No file selected or file type is incorrect.");
-    return { message: 'No file selected or file type is incorrect.', ok: false }
+
+    await prisma.whitelisted.createMany({
+      data: jsonArray,
+    })
+
+    return { message: 'Whitelisted emails saved successfully!', ok: true }
+  } catch (error) {
+    console.log(error);
+    return { message: 'Having trouble saving the whitelisted emails', ok: false }
   }
 }
