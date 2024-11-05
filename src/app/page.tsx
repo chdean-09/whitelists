@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import CSVFileForm from "@/components/custom/csvFileForm";
+import EmailForm from "@/components/custom/emailForm";
 
 export default function Home() {
   return (
@@ -17,10 +16,7 @@ export default function Home() {
           <Separator className="w-24 bg-white/80" />
         </div>
 
-        <div className="w-full flex flex-row gap-2">
-          <Input type="email" placeholder="Enter Email Manually" pattern=".+@example\.com" />
-          <Button>Submit</Button>
-        </div>
+        <EmailForm />
       </main>
     </div>
   );
