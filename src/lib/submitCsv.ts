@@ -2,19 +2,7 @@
 
 import csv from 'csvtojson';
 import prisma from './db';
-import { z } from 'zod';
-
-const csvTypeSchema = z.object({
-  email: z
-    .string({
-      required_error: 'Email address is missing',
-    })
-    .email({
-      message: 'Invalid email address',
-    }),
-});
-
-const csvArraySchema = z.array(csvTypeSchema);
+import { csvArraySchema } from './schema';
 
 export default async function submitCSV(prevState: unknown, formData: FormData): Promise<{
   message: string | null;

@@ -1,12 +1,7 @@
 'use server'
 
 import prisma from './db';
-import { z } from 'zod';
-
-const csvTypeSchema = z.coerce.string()
-  .email({
-    message: "Invalid email address",
-  });
+import { emailTypeSchema } from './schema';
 
 export default async function submitEmail(prevState: unknown, formData: FormData): Promise<{
   message: string | null;
@@ -14,7 +9,7 @@ export default async function submitEmail(prevState: unknown, formData: FormData
 }> {
   const email = formData.get('email') as string;
 
-  const validation = csvTypeSchema.safeParse(email);
+  const validation = emailTypeSchema.safeParse(email);
   
   if (!validation.success) {
     const errorMessage = validation.error.errors[0].message;
