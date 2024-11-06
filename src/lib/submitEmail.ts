@@ -28,9 +28,9 @@ export default async function submitEmail(prevState: unknown, formData: FormData
       }
     })
 
-    return { message: 'Whitelisted emails saved successfully!', ok: true }
+    return { message: 'Whitelisted email saved successfully!', ok: true }
   } catch (error) {
     console.log(error);
-    return { message: 'Having trouble saving the whitelisted emails', ok: false }
+    return { message: 'Having trouble saving the whitelisted email', ok: false }
   }
 }

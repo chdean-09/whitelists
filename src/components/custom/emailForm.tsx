@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { Input } from '../ui/input';
 import SubmitButton from './submitButton';
 import submitEmail from '@/lib/submitEmail';
@@ -13,6 +13,13 @@ export default function EmailForm() {
     ok: false
   })
 
+  useEffect(() => {
+    if (state.ok) {
+      setEmail('');
+      setIsEmailValid(false);
+    }
+  }, [state]);
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
@@ -23,15 +30,12 @@ export default function EmailForm() {
 
   return (
     <>
-      {state?.message &&
+      {state.message &&
         <p className={`${!state.ok ? 'text-red-500' : 'text-green-400'} text-sm`}>
-          {state?.message}
+          {state.message}
         </p>
       }
-      <form className='w-full flex flex-row gap-2' action={formAction} onSubmit={() => {
-        setEmail('')
-        setIsEmailValid(false)
-      }}>
+      <form className='w-full flex flex-row gap-2' action={formAction}>
         <Input
           type="email"
           name="email"

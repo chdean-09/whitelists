@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { Input } from '../ui/input';
 import submitCSV from '@/lib/submitCsv';
 import SubmitButton from './submitButton';
@@ -12,14 +12,18 @@ export default function CSVFileForm() {
     ok: false
   })
 
+  useEffect(() => {
+    setFile(null);
+  }, [state]);
+
   return (
     <>
-      {state?.message &&
+      {state.message &&
         <p className={`${!state.ok ? 'text-red-500' : 'text-green-400'} text-sm`}>
-          {state?.message}
+          {state.message}
         </p>
       }
-      <form className='w-full flex flex-row gap-2' action={formAction} onSubmit={() => setFile(null)}>
+      <form className='w-full flex flex-row gap-2' action={formAction}>
         <Input
           type="file"
           name='csvFile'
