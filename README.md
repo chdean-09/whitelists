@@ -8,7 +8,7 @@ const data = await response.json();
 
 The return type for the data should be:
 
-```js
+```ts
 interface Whitelists {
   whitelisted: boolean;
   message: string;
