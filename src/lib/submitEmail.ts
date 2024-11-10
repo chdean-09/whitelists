@@ -17,6 +17,16 @@ export default async function submitEmail(prevState: unknown, formData: FormData
   }
 
   try {
+    const emailExists = await prisma.whitelisted.findFirst({
+      where: {
+        email: email
+      }
+    })
+
+    if (emailExists) {
+      return { message: 'Email is already whitelisted', ok: false }
+    }
+
     await prisma.whitelisted.create({
       data: {
         email: email

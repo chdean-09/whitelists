@@ -5,6 +5,9 @@ import prisma from './db';
 import { csvArraySchema } from './schema';
 
 export default async function submitCSV(prevState: unknown, formData: FormData): Promise<{
+  duplicates?: {
+    email: string;
+  }[];
   message: string | null;
   ok: boolean;
 }> {
@@ -21,11 +24,34 @@ export default async function submitCSV(prevState: unknown, formData: FormData):
       return { message: errorMessage, ok: false };
     }
 
-    await prisma.whitelisted.createMany({
-      data: jsonArray,
-    })
+    const validatedEmails = jsonArray as { email: string; }[]
 
-    return { message: 'Whitelisted emails saved successfully!', ok: true }
+    const duplicates: { email: string }[] = [];
+
+    for (const item of validatedEmails) {
+      const emailExists = await prisma.whitelisted.findFirst({
+        where: { email: item.email }
+      });
+
+      if (emailExists) {
+        duplicates.push({ email: item.email });
+      } else {
+        await prisma.whitelisted.create({
+          data: {
+            email: item.email
+          }
+        })
+      }
+    }
+
+    if (duplicates.length === validatedEmails.length) {
+      return { message: 'All emails are already whitelisted', ok: false }
+    } else if (duplicates.length > 0) {
+      return { duplicates: duplicates, message: 'Some emails were added successfully, but some were already whitelisted.', ok: true }
+    } else {
+      return { message: 'All emails now whitelisted successfully!', ok: true }
+    }
+    
   } catch (error) {
     console.log(error);
     return { message: 'Having trouble saving the whitelisted emails', ok: false }
