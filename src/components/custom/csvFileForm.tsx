@@ -35,30 +35,47 @@ export default function CSVFileForm() {
           File size exceeds 1 MB. Please upload a smaller file.
         </p>
       }
-      {state.message && !state.duplicates &&
+      {state.message && !state.duplicates && !state.invalids &&
+        !(fileSize !== null && !validFileSize(fileSize)) &&
         <p className={`${!state.ok ? 'text-red-500' : 'text-green-400'} text-sm`}>
           {state.message}
         </p>
       }
-      {state.message && state.duplicates &&
+      {state.message && (state.duplicates || state.invalids) &&
+        !(fileSize !== null && !validFileSize(fileSize)) &&
         <>
-          <p className='text-yellow-400 text-sm'>
+          <p className={`${!state.ok ? 'text-red-500' : 'text-yellow-300'} text-sm`}>
             {state.message}
           </p>
-          <HoverCard>
-            <HoverCardTrigger className='text-yellow-400 text-sm underline cursor-pointer'>
-              Hover here to view duplicates
-            </HoverCardTrigger>
-            <HoverCardContent className='overflow-auto max-h-64'>
-              <ul className='list-disc list-inside'>
-                {state.duplicates.map((duplicate, index) => (
-                  <li key={index}>
-                    {duplicate.email}
-                  </li>
-                ))}
-              </ul>
-            </HoverCardContent>
-          </HoverCard>
+          {state.ok &&
+            <HoverCard>
+              <HoverCardTrigger className='text-yellow-300 text-sm underline cursor-pointer'>
+                Hover here to view duplicates/invalids
+              </HoverCardTrigger>
+              <HoverCardContent className='overflow-auto max-h-64'>
+                {state.duplicates &&
+                  <ul className='list-disc list-inside'>
+                    <p className='font-bold'>Duplicates:</p>          
+                    {state.duplicates.map((duplicate, index) => (
+                      <li key={index} className='text-sm'>
+                        {duplicate.email}
+                      </li>
+                    ))}
+                  </ul>
+                }
+                {state.invalids &&
+                  <ul className='list-disc list-inside'>
+                    <p className='font-bold'>Invalid Emails:</p>
+                    {state.invalids.map((invalid, index) => (
+                      <li key={index} className='text-sm'>
+                        {invalid.email}
+                      </li>
+                    ))}
+                  </ul>
+                }
+              </HoverCardContent>
+            </HoverCard>
+          }
         </>
       }
       <form className='w-full flex flex-row gap-2' action={formAction}>
