@@ -11,9 +11,16 @@ export default async function submitCSV(prevState: unknown, formData: FormData):
   message: string | null;
   ok: boolean;
 }> {
-  const csvFile = formData.get('csvFile') as File;
-
   try {
+    const csvFile = formData.get('csvFile') as File;
+
+    if (
+      csvFile.type !== "text/csv" &&
+      csvFile.type !== "application/vnd.ms-excel"
+    ) {
+      throw new Error('Invalid file type. Please upload a CSV file');
+    }
+
     const fileText = await csvFile.text();
 
     const jsonArray = await csv().fromString(fileText);
@@ -21,7 +28,7 @@ export default async function submitCSV(prevState: unknown, formData: FormData):
 
     if (!validation.success) {
       const errorMessage = validation.error.errors[0].message;
-      return { message: errorMessage, ok: false };
+      throw new Error(errorMessage);
     }
 
     const validatedEmails = jsonArray as { email: string; }[]
@@ -51,9 +58,13 @@ export default async function submitCSV(prevState: unknown, formData: FormData):
     } else {
       return { message: 'All emails now whitelisted successfully!', ok: true }
     }
-    
+
   } catch (error) {
-    console.log(error);
-    return { message: 'Having trouble saving the whitelisted emails', ok: false }
+    if (error instanceof Error) {
+      return { message: error.message, ok: false }
+    } else {
+      console.log(error)
+      return { message: 'An error occurred', ok: false }
+    }
   }
 }

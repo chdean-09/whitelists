@@ -12,6 +12,7 @@ import {
 
 export default function CSVFileForm() {
   const [file, setFile] = useState<File | null>(null);
+  const [fileSize, setFileSize] = useState<number | null>(null);
   const [state, formAction] = useActionState(submitCSV, {
     message: null,
     ok: false
@@ -21,8 +22,19 @@ export default function CSVFileForm() {
     setFile(null);
   }, [state]);
 
+  function validFileSize(fileSize: number): boolean {
+    const MAX_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+
+    return fileSize <= MAX_FILE_SIZE
+  }
+
   return (
     <>
+      {fileSize !== null && !validFileSize(fileSize) &&
+        <p className='text-red-500 text-sm'>
+          File size exceeds 1 MB. Please upload a smaller file.
+        </p>
+      }
       {state.message && !state.duplicates &&
         <p className={`${!state.ok ? 'text-red-500' : 'text-green-400'} text-sm`}>
           {state.message}
@@ -41,7 +53,7 @@ export default function CSVFileForm() {
               <ul className='list-disc list-inside'>
                 {state.duplicates.map((duplicate, index) => (
                   <li key={index}>
-                    {duplicate.email}        
+                    {duplicate.email}
                   </li>
                 ))}
               </ul>
@@ -56,10 +68,14 @@ export default function CSVFileForm() {
           accept=".csv"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             const files = e.target.files;
+            setFileSize(files ? files[0].size : null);
             setFile(files ? files[0] : null);
           }}
         />
-        <SubmitButton disabled={!file} />
+        <SubmitButton disabled={
+          !file ||
+          (fileSize !== null && !validFileSize(fileSize))
+        } />
       </form>
     </>
   )

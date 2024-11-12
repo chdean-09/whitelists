@@ -7,16 +7,16 @@ export default async function submitEmail(prevState: unknown, formData: FormData
   message: string | null;
   ok: boolean;
 }> {
-  const email = formData.get('email') as string;
-
-  const validation = emailTypeSchema.safeParse(email);
-  
-  if (!validation.success) {
-    const errorMessage = validation.error.errors[0].message;
-    return { message: errorMessage, ok: false };
-  }
-
   try {
+    const email = formData.get('email') as string;
+
+    const validation = emailTypeSchema.safeParse(email);
+    
+    if (!validation.success) {
+      const errorMessage = validation.error.errors[0].message;
+      throw new Error(errorMessage);
+    }
+
     const emailExists = await prisma.whitelisted.findFirst({
       where: {
         email: email
@@ -24,7 +24,7 @@ export default async function submitEmail(prevState: unknown, formData: FormData
     })
 
     if (emailExists) {
-      return { message: 'Email is already whitelisted', ok: false }
+      throw new Error('Email is already whitelisted')
     }
 
     await prisma.whitelisted.create({
@@ -35,7 +35,11 @@ export default async function submitEmail(prevState: unknown, formData: FormData
 
     return { message: 'Whitelisted email saved successfully!', ok: true }
   } catch (error) {
-    console.log(error);
-    return { message: 'Having trouble saving the whitelisted email', ok: false }
+    if (error instanceof Error) {
+      return { message: error.message, ok: false }
+    } else {
+      console.log(error)
+      return { message: 'An error occurred', ok: false }
+    }
   }
 }
